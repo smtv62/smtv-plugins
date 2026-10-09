@@ -1,0 +1,14 @@
+{
+  "hdfilmcehennemi": {
+    "base": "https://www.hdfilmcehennemi2.biz",
+    "candidates": [
+      "https://www.hdfilmcehennemi2.biz",
+      "https://www.hdfilmcehennemi.nl"
+    ],
+    "healthcheck": {
+      "path": "/api/search?q=test",
+      "expect": "\"data\":"
+    },
+    "updatedAt": "2026-10-08T00:00:00Z"
+  }
+}

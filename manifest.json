@@ -1,0 +1,23 @@
+{
+  "id": "smtv-plugins",
+  "name": "smTV Plugins",
+  "version": "1.0.0",
+  "author": "smTV",
+  "description": "smTV One icin ozel eklentiler",
+  "scrapers": [
+    {
+      "id": "hdfilmcehennemi",
+      "name": "HDFilmCehennemi",
+      "description": "hdfilmcehennemi film ve dizi kaynaklari",
+      "version": "1.0.0",
+      "filename": "providers/hdfilmcehennemi.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true,
+      "supportsStreams": true,
+      "supportsSearch": true,
+      "supportsComments": false,
+      "contentLanguage": ["tr"],
+      "catalogs": []
+    }
+  ]
+}
