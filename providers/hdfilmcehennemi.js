@@ -83,6 +83,13 @@ function b64decode(s) {
 
 /* ---------- TMDB ---------- */
 
+// Uygulama seriler icin "tv" gonderir; bazi pluginler "series" bekler.
+// Ikisini de dizi olarak kabul et.
+function isSeriesType(mediaType) {
+  var t = String(mediaType || "").toLowerCase();
+  return t === "tv" || t === "series" || t === "show" || t === "dizi";
+}
+
 async function tmdbLookup(tmdbId, mediaType) {
   var key = "";
   try { key = TMDB_API_KEY || ""; } catch (e) {}
@@ -90,7 +97,7 @@ async function tmdbLookup(tmdbId, mediaType) {
     log("TMDB_API_KEY yok!");
     return null;
   }
-  var path = mediaType === "series" ? "tv" : "movie";
+  var path = isSeriesType(mediaType) ? "tv" : "movie";
   var url = "https://api.themoviedb.org/3/" + path + "/" + encodeURIComponent(tmdbId) +
     "?api_key=" + encodeURIComponent(key) + "&language=tr-TR&append_to_response=external_ids";
   try {
@@ -255,7 +262,7 @@ async function resolveEpisodeUrl(base, seriesUrl, season, episode) {
 async function getStreams(tmdbId, mediaType, season, episode, url) {
   log("getStreams tmdbId=" + tmdbId + " type=" + mediaType + " s=" + season + " e=" + episode + " url=" + (url || ""));
   var base = await resolveBase();
-  var wantSeries = mediaType === "series";
+  var wantSeries = isSeriesType(mediaType);
   var pageUrl = null;
 
   // Search/click uzerinden dogrudan sayfa URLsi geldiyse onu kullan

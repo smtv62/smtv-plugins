@@ -72,11 +72,16 @@ await check("getStreams movie", async () => {
 });
 
 console.log("\n== Dizi: Lanterns S1E1 (TMDB 95350) ==");
-await check("getStreams series", async () => {
-  const streams = await getStreams("95350", "series", 1, 1, null);
+await check("getStreams series (type=tv, uygulamanin gonderdigi deger)", async () => {
+  const streams = await getStreams("95350", "tv", 1, 1, null);
   console.log("  stream:", streams.length);
   for (const s of streams.slice(0, 4)) console.log("   -", s.title, "->", s.url.slice(0, 90));
   return { ok: streams.length > 0 && streams.every((s) => s.url.includes(".m3u8")) };
+});
+
+await check("getStreams series (type=series, geriye uyumluluk)", async () => {
+  const streams = await getStreams("95350", "series", 1, 1, null);
+  return { ok: streams.length > 0 };
 });
 
 console.log("\n== Arama: 'Resident Evil' ==");
