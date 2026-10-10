@@ -1,0 +1,15 @@
+{
+  "name": "smtv-plugins",
+  "version": "2.0.0",
+  "private": true,
+  "description": "smTV One plugin deposu — test icin cheerio/crypto-js (PluginRuntime ile ayni moduller)",
+  "type": "module",
+  "scripts": {
+    "test": "node test/run-tests.mjs",
+    "check": "node scripts/check-sources.mjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "crypto-js": "^4.2.0"
+  }
+}
