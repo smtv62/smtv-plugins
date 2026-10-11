@@ -1,6 +1,6 @@
 {
   "name": "smtv-plugins",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "description": "smTV One plugin deposu — test icin cheerio/crypto-js (PluginRuntime ile ayni moduller)",
   "type": "module",

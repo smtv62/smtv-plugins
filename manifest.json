@@ -1,7 +1,7 @@
 {
   "id": "smtv-plugins",
   "name": "smTV Plugins",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "smTV",
   "description": "smTV One icin ozel eklentiler — HDFilmCehennemi + patr0n/manitux kaynaklari",
   "scrapers": [
@@ -25,11 +25,11 @@
       "id": "patron-multi",
       "name": "PatronMulti",
       "description": "Birden fazla ekstraktor uzerunden film ve dizi stream linkleri. @patr0n tarafindan gelistirildi (patr0nq/nuvioaddons).",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "filename": "providers/patronMulti.js",
       "supportedTypes": ["movie", "tv"],
       "enabled": true,
-      "logo": "https://www.google.com/s2/favicons?domain=vidlink.pro&sz=%size%",
+      "logo": "https://www.google.com/s2/favicons?domain=vidmody.com&sz=%size%",
       "supportsStreams": true,
       "supportsSearch": false,
       "supportsComments": false,
