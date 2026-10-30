@@ -1,442 +1,271 @@
 /**
- * patronHDFilmDelisi - Built from src/patronHDFilmDelisi/
- * Generated: 2026-04-29T15:20:35.938Z
+ * patronHDFilmDelisi - hdfilmdelisi.one
+ *
+ * hdfilmdelisi sayfalarindaki asil oynatma kaynagi vixolity'dir:
+ *   sayfadaki  videoUrl: https://pl.vixolity.com/<token>
+ *   token = base64(base64(base64(imdbId)))   (3 katman)
+ *   temiz tam film: https://ha.vixolity.com/vs/<imdbId>
+ *
+ * Eski surum sayfadaki kucuk onizleme mp4'unu (/vids/...mp4) donduruyordu;
+ * uzerine "kendi sitemizden izleyin" yazisi yakilmis olmasi nedeniyle hem
+ * filigran gorunuyordu hem tam film degildi. Artik vixolity temiz stream'i
+ * onceliklidir; bulunamazsa TMDB imdb ile /vs/ denenir, o da olmazsa eski
+ * mp4 yedege duser.
  */
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp(a, prop, b[prop]);
-    }
-  return a;
-};
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
 
-// src/patronHDFilmDelisi/index.js
-var patronHDFilmDelisi_exports = {};
-__export(patronHDFilmDelisi_exports, {
-  getStreams: () => getStreams
-});
-module.exports = __toCommonJS(patronHDFilmDelisi_exports);
-
-// src/patronHDFilmDelisi/extractor.js
-var import_cheerio = require("cheerio");
-
-// src/patronHDFilmDelisi/http.js
-var MAIN_URL = "https://hdfilmdelisi.one";
-var HEADERS = {
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-  "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8"
-};
-function fetchText(_0) {
-  return __async(this, arguments, function* (url, extraHeaders = {}) {
-    const response = yield fetch(url, {
-      headers: __spreadValues(__spreadValues({}, HEADERS), extraHeaders),
-      redirect: "follow"
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} -> ${url}`);
-    }
-    return yield response.text();
-  });
-}
-function fixUrl(url) {
-  if (!url)
-    return "";
-  if (url.startsWith("http://") || url.startsWith("https://"))
-    return url;
-  if (url.startsWith("//"))
-    return `https:${url}`;
-  if (url.startsWith("/"))
-    return `${MAIN_URL}${url}`;
-  return `${MAIN_URL}/${url}`;
-}
-
-// src/patronHDFilmDelisi/tmdb.js
 var TMDB_API_KEY = "500330721680edb6d5f7f12ba7cd9023";
-var PROVIDER_TAG = "[PatronHDFilmDelisi]";
-function getTmdbTitleFromHtml(tmdbId, mediaType) {
-  return __async(this, null, function* () {
-    try {
-      const type = mediaType === "movie" ? "movie" : "tv";
-      const url = `https://www.themoviedb.org/${type}/${tmdbId}?language=tr-TR`;
-      const response = yield fetch(url, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-          "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7"
-        }
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const html = yield response.text();
-      let trTitle = "";
-      const ogMatch = html.match(/<meta property="og:title" content="([^"]+)">/);
-      if (ogMatch) {
-        trTitle = ogMatch[1];
-      } else {
-        const titleMatch = html.match(/<title>([^<]+)<\/title>/);
-        if (titleMatch) {
-          trTitle = titleMatch[1].split("(")[0].split("\u2014")[0].trim();
-        }
-      }
-      let origTitle = trTitle;
-      const origMatch = html.match(/<h3 class="caption" dir="auto">([^<]+)<\/h3>/) || html.match(/<strong class="original_title">([^<]+)<\/strong>/);
-      if (origMatch) {
-        const cleaned = origMatch[1].replace("Orijinal Ad\u0131", "").trim();
-        if (cleaned.length > 0)
-          origTitle = cleaned;
-      }
-      if (!trTitle)
-        return null;
-      console.log(`${PROVIDER_TAG} [HTML] Baslik bulundu: ${trTitle}`);
-      return { trTitle, origTitle };
-    } catch (e) {
-      console.warn(`${PROVIDER_TAG} [HTML] Scraping basarisiz: ${e.message}`);
-      return null;
-    }
-  });
-}
-function getTmdbTitleFromApi(tmdbId, mediaType) {
-  return __async(this, null, function* () {
-    try {
-      const type = mediaType === "movie" ? "movie" : "tv";
-      const url = `https://api.themoviedb.org/3/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=tr-TR`;
-      const response = yield fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = yield response.json();
-      const trTitle = data.title || data.name || "";
-      const origTitle = data.original_title || data.original_name || trTitle;
-      if (!trTitle)
-        return null;
-      console.log(`${PROVIDER_TAG} [API] Baslik bulundu: ${trTitle}`);
-      return { trTitle, origTitle };
-    } catch (e) {
-      console.warn(`${PROVIDER_TAG} [API] REST API basarisiz: ${e.message}`);
-      return null;
-    }
-  });
-}
-function getTmdbTitle(tmdbId, mediaType) {
-  return __async(this, null, function* () {
-    const htmlResult = yield getTmdbTitleFromHtml(tmdbId, mediaType);
-    if (htmlResult)
-      return htmlResult;
-    console.log(`${PROVIDER_TAG} HTML scraping basarisiz, TMDB REST API deneniyor...`);
-    const apiResult = yield getTmdbTitleFromApi(tmdbId, mediaType);
-    if (apiResult)
-      return apiResult;
-    console.error(`${PROVIDER_TAG} Her iki yontem de basarisiz oldu: TMDB ID=${tmdbId}`);
-    return { trTitle: "", origTitle: "" };
-  });
+var MAIN_URL = "https://hdfilmdelisi.one";
+var VIX_REFERER = "https://pl.vixolity.com/";
+var TAG = "[PatronHDFilmDelisi]";
+
+var UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+function slugify(value) {
+  return (value || "")
+    .toLowerCase()
+    .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
+    .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
-// src/patronHDFilmDelisi/extractor.js
-var PROVIDER_NAME = "PatronHDFilmDelisi";
 function normalize(value) {
   return (value || "").toLowerCase().replace(/[^a-z0-9çğıöşü]+/gi, " ").trim();
 }
-function slugify(value) {
-  return (value || "").toLowerCase().replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
-}
-function isLikelyMoviePage(html) {
-  const lower = (html || "").toLowerCase();
-  if (!lower)
-    return false;
-  if (lower.includes("<title>404") || lower.includes("404 not found"))
-    return false;
-  return lower.includes("/film/") || lower.includes("film \xF6zeti") || lower.includes("oyuncular") || lower.includes("imdb");
-}
-function pickBestMatch(results, query) {
-  if (!results.length)
-    return null;
-  const q = normalize(query);
-  return results.find((item) => normalize(item.title) === q) || results.find((item) => normalize(item.title).startsWith(q)) || results.find((item) => normalize(item.title).includes(q)) || results[0];
-}
-function extractCandidatesFromHtml(html) {
-  const $ = (0, import_cheerio.load)(html);
-  const candidates = [];
-  $('a[href*="/film/"]').each((_, el) => {
-    const href = fixUrl($(el).attr("href"));
-    const title = $(el).find("h2,h3,h4").first().text().trim() || $(el).attr("title") || $(el).text().trim();
-    if (href && title) {
-      candidates.push({ title, href });
-    }
-  });
-  return candidates;
-}
-function tryDirectSlug(query) {
-  return __async(this, null, function* () {
-    const slug = slugify(query);
-    if (!slug)
-      return null;
-    const candidates = [`${MAIN_URL}/film/${slug}`];
-    for (let i = 1; i <= 12; i++) {
-      candidates.push(`${MAIN_URL}/film/${slug}-hdizle-${i}`);
-    }
-    for (const url of candidates) {
-      try {
-        const html = yield fetchText(url, {
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Referer": MAIN_URL
-        });
-        if (isLikelyMoviePage(html))
-          return url;
-      } catch (_) {
-        continue;
-      }
-    }
-    return null;
-  });
-}
-function collectObjectsDeep(value, out) {
-  if (!value)
-    return;
-  if (Array.isArray(value)) {
-    for (const item of value)
-      collectObjectsDeep(item, out);
-    return;
+
+async function fetchText(url, extraHeaders) {
+  var headers = {
+    "User-Agent": UA,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8"
+  };
+  if (extraHeaders) {
+    for (var k in extraHeaders) headers[k] = extraHeaders[k];
   }
-  if (typeof value === "object") {
-    out.push(value);
-    for (const key of Object.keys(value))
-      collectObjectsDeep(value[key], out);
-  }
+  var response = await fetch(url, { headers: headers, redirect: "follow" });
+  if (!response.ok) throw new Error("HTTP " + response.status + " -> " + url);
+  return await response.text();
 }
-function extractCandidatesFromJson(raw) {
-  try {
-    const parsed = JSON.parse(raw);
-    const objects = [];
-    const candidates = [];
-    collectObjectsDeep(parsed, objects);
-    for (const item of objects) {
-      const title = item.title || item.name || item.originalTitle || item.original_name || "";
-      const slug = item.slug || "";
-      const href = item.href || item.url || (slug ? `/film/${slug}` : "");
-      if (!href)
-        continue;
-      if (!String(href).includes("/film/"))
-        continue;
-      candidates.push({
-        title: title || String(href).split("/").pop().replace(/-/g, " "),
-        href: fixUrl(href)
+
+function fixUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("//")) return "https:" + url;
+  if (url.startsWith("/")) return MAIN_URL + url;
+  return MAIN_URL + "/" + url;
+}
+
+// ---- TMDB baslik ----
+async function tmdbJson(tmdbId, mediaType, externalIds) {
+  var typePath = mediaType === "movie" ? "movie" : "tv";
+  var append = externalIds ? "&append_to_response=external_ids" : "";
+  var url = "https://api.themoviedb.org/3/" + typePath + "/" + tmdbId +
+            "?api_key=" + TMDB_API_KEY + "&language=tr-TR" + append;
+  var res = await fetch(url);
+  if (!res.ok) throw new Error("TMDB HTTP " + res.status);
+  return await res.json();
+}
+
+async function getTitles(tmdbId, mediaType) {
+  var d = await tmdbJson(tmdbId, mediaType, true);
+  var trTitle = d.title || d.name || "";
+  var origTitle = d.original_title || d.original_name || trTitle;
+  var year = (d.release_date || d.first_air_date || "").slice(0, 4);
+  var imdbId = (d.external_ids && d.external_ids.imdb_id) || "";
+  return { trTitle: trTitle, origTitle: origTitle, year: year, imdbId: imdbId };
+}
+
+// ---- hdfilmdelisi sayfasi bulma ----
+function likelyFilmPage(html) {
+  var lower = (html || "").toLowerCase();
+  if (!lower) return false;
+  if (lower.includes("<title>404") || lower.includes("404 not found")) return false;
+  return lower.includes("/film/") || lower.includes("pl.vixolity.com") ||
+         lower.includes("/vids/") || lower.includes("film özeti") || lower.includes("oyuncular");
+}
+
+function pickBest(results, query) {
+  if (!results.length) return null;
+  var q = normalize(query);
+  var exact = results.find(function (i) { return normalize(i.title) === q; });
+  if (exact) return exact;
+  var starts = results.find(function (i) { return normalize(i.title).startsWith(q); });
+  if (starts) return starts;
+  var inc = results.find(function (i) { return normalize(i.title).includes(q); });
+  if (inc) return inc;
+  return results[0];
+}
+
+function candidatesFromHtml(html) {
+  var out = [];
+  var re = /href="(\/film\/[^"]+)"[^>]*>([\s\S]{0,300}?)<\/a>/g;
+  var m;
+  while ((m = re.exec(html)) !== null) {
+    var href = fixUrl(m[1]);
+    var title = m[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    if (href && title) out.push({ title: title, href: href });
+  }
+  // href tek basina (title'siz) da dene
+  var re2 = /href="(\/film\/[^"]+)"/g;
+  var m2;
+  while ((m2 = re2.exec(html)) !== null) {
+    var h = fixUrl(m2[1]);
+    if (!out.some(function (i) { return i.href === h; })) {
+      out.push({ title: m2[1].split("/").pop().replace(/-/g, " "), href: h });
+    }
+  }
+  return out;
+}
+
+async function searchPage(query) {
+  var endpoints = [
+    MAIN_URL + "/arama?q=" + encodeURIComponent(query),
+    MAIN_URL + "/api/search?q=" + encodeURIComponent(query),
+    MAIN_URL + "/search?q=" + encodeURIComponent(query)
+  ];
+  for (var i = 0; i < endpoints.length; i++) {
+    try {
+      var body = await fetchText(endpoints[i], {
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept": "*/*",
+        "Referer": MAIN_URL
       });
+      var found = candidatesFromHtml(body);
+      if (found.length) {
+        var best = pickBest(found, query);
+        if (best) return best.href;
+      }
+    } catch (e) { /* sonraki dene */ }
+  }
+  // dogrudan slug dene
+  var slug = slugify(query);
+  if (!slug) return null;
+  var guesses = [MAIN_URL + "/film/" + slug];
+  for (var n = 1; n <= 10; n++) guesses.push(MAIN_URL + "/film/" + slug + "-hdizle-" + n);
+  for (var g = 0; g < guesses.length; g++) {
+    try {
+      var html = await fetchText(guesses[g], { "Referer": MAIN_URL });
+      if (likelyFilmPage(html)) return guesses[g];
+    } catch (e) { /* atla */ }
+  }
+  return null;
+}
+
+// ---- vixolity cozumu ----
+function b64decode(s) {
+  // QuickJS'te atob global olarak polyfill edilmis
+  return atob(s);
+}
+
+function decodeVixToken(token) {
+  var cur = token;
+  for (var i = 0; i < 4; i++) {
+    try {
+      var pad = cur.length % 4;
+      if (pad) cur = cur + "====".slice(0, pad);
+      var next = b64decode(cur);
+      if (!next) break;
+      cur = next;
+      if (/^tt\d{5,}$/.test(cur.trim())) return cur.trim();
+    } catch (e) { break; }
+  }
+  var fin = (cur || "").trim();
+  return /^tt\d{5,}$/.test(fin) ? fin : null;
+}
+
+function extractImdbFromPage(html) {
+  var m = html.match(/pl\.vixolity\.com\/([A-Za-z0-9+/=_{-]{15,})/);
+  if (m) {
+    var imdb = decodeVixToken(m[1]);
+    if (imdb) return imdb;
+  }
+  // sayfada acik imdb id var mi
+  var t = (html.match(/tt\d{7,9}/) || [])[0];
+  return t || null;
+}
+
+function vixStream(imdbId, quality, label) {
+  return {
+    url: "https://ha.vixolity.com/vs/" + imdbId,
+    name: "HDFilmDelisi",
+    title: label + " | HDFilmDelisi | Temiz",
+    quality: quality || "Auto",
+    headers: { "Referer": VIX_REFERER, "User-Agent": UA }
+  };
+}
+
+// ---- eski mp4 yedegi (filigranli, son care) ----
+function legacyMp4Streams(html, movieUrl) {
+  var out = [];
+  var seen = {};
+  var re = /https?:\/\/[^\s"'<>\\]+(?:\.m3u8|\.mp4)[^\s"'<>\\]*/gi;
+  var m;
+  while ((m = re.exec(html)) !== null) {
+    var url = m[0];
+    if (url === movieUrl || seen[url]) continue;
+    seen[url] = true;
+    out.push({
+      url: url,
+      name: "HDFilmDelisi",
+      title: "HDFilmDelisi (Onizleme)",
+      quality: "Auto",
+      headers: { "Referer": movieUrl, "Origin": MAIN_URL }
+    });
+  }
+  return out;
+}
+
+async function extractStreams(tmdbId, mediaType) {
+  var info = await getTitles(tmdbId, mediaType);
+  console.log(TAG + " TMDB:" + tmdbId + " TR:" + info.trTitle + " imdb:" + info.imdbId);
+  if (!info.trTitle && !info.origTitle) return [];
+
+  var movieUrl = null;
+  if (info.trTitle) movieUrl = await searchPage(info.trTitle);
+  if (!movieUrl && info.origTitle && info.origTitle !== info.trTitle) {
+    movieUrl = await searchPage(info.origTitle);
+  }
+
+  var label = (info.trTitle || info.origTitle || "Film") + (info.year ? " (" + info.year + ")" : "");
+
+  // 1) sayfadaki vixolity token'ini coz (en dogru - hdfilmdelisi'nin kendi kaynagi)
+  if (movieUrl) {
+    try {
+      var html = await fetchText(movieUrl, { "Referer": MAIN_URL });
+      var imdb = extractImdbFromPage(html);
+      if (imdb) {
+        console.log(TAG + " vixolity imdb:" + imdb + " -> /vs/");
+        return [vixStream(imdb, "Auto", label)];
+      }
+      // 2) yedek: sayfadaki mp4 (filigranli)
+      var legacy = legacyMp4Streams(html, movieUrl);
+      if (legacy.length) {
+        console.log(TAG + " vixolity yok, mp4 yedek:" + legacy.length);
+        return legacy;
+      }
+    } catch (e) {
+      console.warn(TAG + " sayfa hatasi: " + e.message);
     }
-    return candidates;
-  } catch (_) {
+  }
+
+  // 3) son yedek: TMDB imdb ile /vs/
+  if (info.imdbId && info.imdbId.startsWith("tt")) {
+    console.log(TAG + " TMDB imdb ile /vs/: " + info.imdbId);
+    return [vixStream(info.imdbId, "Auto", label)];
+  }
+  return [];
+}
+
+async function getStreams(tmdbId, mediaType, season, episode) {
+  try {
+    console.log(TAG + " Istek: " + mediaType + " | TMDB: " + tmdbId + " | S:" + season + " E:" + episode);
+    if (mediaType !== "movie") return [];
+    return await extractStreams(tmdbId, mediaType);
+  } catch (error) {
+    console.error(TAG + " Hata: " + error.message);
     return [];
   }
 }
-function searchMovie(query) {
-  return __async(this, null, function* () {
-    const endpoints = [
-      `${MAIN_URL}/arama?q=${encodeURIComponent(query)}`,
-      `${MAIN_URL}/arama?query=${encodeURIComponent(query)}`,
-      `${MAIN_URL}/film-ara/${encodeURIComponent(query)}`,
-      `${MAIN_URL}/search?q=${encodeURIComponent(query)}`,
-      `${MAIN_URL}/api/search?q=${encodeURIComponent(query)}`,
-      `${MAIN_URL}/api/search?query=${encodeURIComponent(query)}`,
-      `${MAIN_URL}/api/film/search?q=${encodeURIComponent(query)}`,
-      `${MAIN_URL}/api/film/search?query=${encodeURIComponent(query)}`
-    ];
-    for (const url of endpoints) {
-      try {
-        const body = yield fetchText(url, {
-          "X-Requested-With": "XMLHttpRequest",
-          "Accept": "*/*",
-          "Referer": MAIN_URL
-        });
-        const byHtml = extractCandidatesFromHtml(body);
-        const byJson = extractCandidatesFromJson(body);
-        const merged = [...byHtml, ...byJson];
-        const seen = /* @__PURE__ */ new Set();
-        const deduped = merged.filter((item) => {
-          const key = `${item.href}|${item.title}`;
-          if (seen.has(key))
-            return false;
-          seen.add(key);
-          return true;
-        });
-        const best = pickBestMatch(deduped, query);
-        if (best) {
-          return best.href;
-        }
-      } catch (_) {
-        continue;
-      }
-    }
-    const directGuess = yield tryDirectSlug(query);
-    if (directGuess)
-      return directGuess;
-    return null;
-  });
-}
-function collectVideoUrlsFromJson(raw) {
-  const out = [];
-  try {
-    const parsed = JSON.parse(raw);
-    const objects = [];
-    collectObjectsDeep(parsed, objects);
-    for (const item of objects) {
-      for (const key of Object.keys(item)) {
-        const value = item[key];
-        if (typeof value !== "string")
-          continue;
-        if (!/^https?:\/\//i.test(value))
-          continue;
-        const keyLower = key.toLowerCase();
-        const valueLower = value.toLowerCase();
-        if (valueLower.includes(".m3u8") || valueLower.includes(".mp4") || keyLower.includes("iframe") || keyLower.includes("embed") || keyLower.includes("source") || keyLower.includes("video") || keyLower === "src" || keyLower === "url") {
-          out.push(value);
-        }
-      }
-    }
-  } catch (_) {
-    return out;
-  }
-  return out;
-}
-function collectVideoUrlsFromText(text) {
-  const out = [];
-  const regex = /https?:\/\/[^\s"'<>\\]+/g;
-  const matches = text.match(regex) || [];
-  for (const url of matches) {
-    const lower = url.toLowerCase();
-    if (lower.includes(".m3u8") || lower.includes(".mp4") || lower.includes("embed") || lower.includes("iframe") || lower.includes("/video/") || lower.includes("/player/")) {
-      out.push(url);
-    }
-  }
-  return out;
-}
-function extractFromMoviePage(movieUrl) {
-  return __async(this, null, function* () {
-    const html = yield fetchText(movieUrl);
-    const $ = (0, import_cheerio.load)(html);
-    const streams = [];
-    const seen = /* @__PURE__ */ new Set();
-    const foundUrls = [];
-    $("iframe").each((_, el) => {
-      const src = $(el).attr("src") || $(el).attr("data-src");
-      if (src) {
-        foundUrls.push(fixUrl(src));
-      }
-    });
-    $("source").each((_, el) => {
-      const src = $(el).attr("src");
-      if (src) {
-        foundUrls.push(fixUrl(src));
-      }
-    });
-    $("script").each((_, el) => {
-      const scriptText = $(el).html() || "";
-      foundUrls.push(...collectVideoUrlsFromJson(scriptText));
-      foundUrls.push(...collectVideoUrlsFromText(scriptText));
-    });
-    foundUrls.push(...collectVideoUrlsFromText(html));
-    for (const url of foundUrls) {
-      if (!url || url === movieUrl)
-        continue;
-      if (seen.has(url))
-        continue;
-      seen.add(url);
-      const lower = url.toLowerCase();
-      const isPlayable = lower.includes(".m3u8") || lower.includes(".mp4");
-      streams.push({
-        name: PROVIDER_NAME,
-        title: isPlayable ? "HDFilmDelisi" : "HDFilmDelisi Embed",
-        url,
-        quality: "Auto",
-        headers: {
-          Referer: movieUrl,
-          Origin: MAIN_URL
-        }
-      });
-    }
-    return streams;
-  });
-}
-function extractStreams(tmdbId, mediaType) {
-  return __async(this, null, function* () {
-    if (mediaType !== "movie")
-      return [];
-    const { trTitle, origTitle } = yield getTmdbTitle(tmdbId, mediaType);
-    console.log(`[${PROVIDER_NAME}] TMDB: ${tmdbId} | TR: ${trTitle} | ORIG: ${origTitle}`);
-    if (!trTitle && !origTitle)
-      return [];
-    let movieUrl = null;
-    if (trTitle)
-      movieUrl = yield searchMovie(trTitle);
-    if (!movieUrl && origTitle && origTitle !== trTitle) {
-      movieUrl = yield searchMovie(origTitle);
-    }
-    if (!movieUrl) {
-      console.warn(`[${PROVIDER_NAME}] Site'de icerik bulunamadi: ${trTitle || origTitle}`);
-      return [];
-    }
-    console.log(`[${PROVIDER_NAME}] Sayfa bulundu: ${movieUrl}`);
-    const streams = yield extractFromMoviePage(movieUrl);
-    console.log(`[${PROVIDER_NAME}] Toplam stream: ${streams.length}`);
-    return streams;
-  });
-}
 
-// src/patronHDFilmDelisi/index.js
-function getStreams(tmdbId, mediaType, season, episode) {
-  return __async(this, null, function* () {
-    try {
-      console.log(`[PatronHDFilmDelisi] Istek: ${mediaType} | TMDB: ${tmdbId} | S:${season} E:${episode}`);
-      if (mediaType !== "movie") {
-        return [];
-      }
-      return yield extractStreams(tmdbId, mediaType);
-    } catch (error) {
-      console.error(`[PatronHDFilmDelisi] Hata: ${error.message}`);
-      return [];
-    }
-  });
-}
+module.exports = { getStreams: getStreams };
