@@ -1,7 +1,7 @@
 {
   "id": "smtv-plugins",
   "name": "smTV Plugins",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "author": "smTV",
   "description": "smTV One icin ozel eklentiler — HDFilmCehennemi + patr0n/manitux kaynaklari",
   "scrapers": [
@@ -224,22 +224,6 @@
       "supportsSearch": false,
       "supportsComments": false,
       "contentLanguage": ["tr"],
-      "formats": ["m3u8", "mp4"],
-      "catalogs": []
-    },
-    {
-      "id": "moon-vidlink",
-      "name": "VidLink",
-      "description": "vidlink.pro uzerinden film ve dizi saglayicisi. mooncrown04/nuviotr.",
-      "version": "1.0.0",
-      "filename": "providers/vidlink.js",
-      "supportedTypes": ["movie", "tv"],
-      "enabled": true,
-      "logo": "https://www.google.com/s2/favicons?domain=vidlink.pro&sz=%size%",
-      "supportsStreams": true,
-      "supportsSearch": false,
-      "supportsComments": false,
-      "contentLanguage": ["tr", "en"],
       "formats": ["m3u8", "mp4"],
       "catalogs": []
     },
