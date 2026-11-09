@@ -5,12 +5,12 @@
 var cheerio = require("cheerio-without-node-native");
 
 const PROVIDER_NAME = "SinemaCX";
-const BASE_URL = "https://www.sinema.la";
+const BASE_URL = "https://sinemacc.com";
 const EMPTY_RESULT = [];
 
 const WORKING_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Referer': 'https://www.sinema.la/'
+    'Referer': 'https://sinemacc.com'
 };
 
 function getStreams(tmdbId, mediaType, seasonNum, episodeNum) {
