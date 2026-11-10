@@ -76,7 +76,7 @@ module.exports = __toCommonJS(patronJetFilmizle_exports);
 var import_cheerio_without_node_native2 = __toESM(require("cheerio-without-node-native"));
 
 // src/patronJetFilmizle/http.js
-var MAIN_URL = "https://jetfilmizle.now";
+var MAIN_URL = "https://jetfilmizle.app";
 var HEADERS = {
   "Referer": `${MAIN_URL}/`,
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -325,14 +325,12 @@ function getStreams(tmdbId, type, season, episode) {
         console.log(`${PROVIDER_TAG3} Aran\u0131yor: "${query}"`);
         let results = [];
         try {
-          const searchUrl = `${MAIN_URL}/arama?q=`;
+          const searchUrl = `${MAIN_URL}/arama?q=${encodeURIComponent(query)}`;
           const searchRes = yield fetchWithResponse(searchUrl, {
-            method: "POST",
+            method: "GET",
             headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
               "Referer": `${MAIN_URL}/`
-            },
-            body: new URLSearchParams({ s: query }).toString()
+            }
           });
           const searchHtml = yield searchRes.text();
           const $ = import_cheerio_without_node_native2.default.load(searchHtml);

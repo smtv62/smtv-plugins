@@ -62,6 +62,11 @@ function getStreams(tmdbId, mediaType, seasonNum, episodeNum) {
                     var iframeUrl = "";
                     $page("iframe").each(function() {
                         var src = $page(this).attr("data-vsrc") || $page(this).attr("src") || "";
+                        if (!src) return;
+                        // data-vsrc artik base64 kodlu tam URL olabiliyor
+                        if (src.indexOf("player.filmizle.in") === -1 && /^[A-Za-z0-9+/=]{20,}$/.test(src)) {
+                            try { src = (typeof atob === "function" ? atob(src) : src); } catch (e) {}
+                        }
                         if (src.includes("player.filmizle.in")) {
                             iframeUrl = src.split("?img=")[0];
                             return false;
@@ -70,7 +75,7 @@ function getStreams(tmdbId, mediaType, seasonNum, episodeNum) {
 
                     if (!iframeUrl) return resolve(EMPTY_RESULT);
 
-                    var videoId = iframeUrl.split("/").pop();
+                    var videoId = iframeUrl.split("/").pop().split("?")[0];
                     return fetch("https://player.filmizle.in/player/index.php?data=" + videoId + "&do=getVideo", {
                         method: 'POST',
                         headers: {
@@ -101,25 +106,35 @@ function getStreams(tmdbId, mediaType, seasonNum, episodeNum) {
 function searchOnSite(query, year) {
     if (!query || query.length < 2) return Promise.resolve(null);
     var cleanQuery = query.toLowerCase().trim();
-    var searchUrl = `${BASE_URL}/?s=` + encodeURIComponent(cleanQuery);
-    
-    return fetch(searchUrl, { headers: WORKING_HEADERS }).then(res => res.text()).then(html => {
+    // Eski `/?s=` ucu artik ana sayfayi donuyor; gercek uc: POST /arama/ (ajax_search)
+    var searchUrl = `${BASE_URL}/arama/`;
+
+    return fetch(searchUrl, {
+        method: "POST",
+        headers: Object.assign({}, WORKING_HEADERS, {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Requested-With": "XMLHttpRequest"
+        }),
+        body: "action=ajax_search&arama_kelime=" + encodeURIComponent(query)
+    }).then(res => res.text()).then(html => {
         var $ = cheerio.load(html);
         var results = [];
 
-        $("a").each(function() {
+        $("a.arama_s, a[href*='/arama/?fsid=']").each(function() {
             var url = $(this).attr("href") || "";
-            var title = $(this).text().toLowerCase().trim();
-            if (!url.startsWith(BASE_URL) || url.includes("/category/") || title.length < 5) return;
+            var fullText = $(this).text().replace(/\s+/g, " ").toLowerCase().trim();
+            var yearEl = $(this).find(".year").text().trim();
+            var title = $(this).find(".title").text().trim().toLowerCase() || fullText;
+            if (!url.startsWith(BASE_URL) || title.length < 3) return;
 
             var score = 0;
             var words = cleanQuery.split(" ");
-            words.forEach(w => { if (title.includes(w)) score += 2; });
-            if (year && title.includes(year)) score += 10;
+            words.forEach(w => { if (w && (title.includes(w) || fullText.includes(w))) score += 2; });
+            if (year && (fullText.includes(year) || yearEl === year)) score += 10;
             if (url.includes(cleanQuery.replace(/\s+/g, '-'))) score += 5;
 
             if (score > 3) {
-                results.push({ url: url, siteTitle: $(this).text().trim(), score: score });
+                results.push({ url: url, siteTitle: $(this).find(".title").text().trim() || $(this).text().trim(), score: score });
             }
         });
 

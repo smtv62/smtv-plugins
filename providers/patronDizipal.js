@@ -80,7 +80,7 @@ module.exports = __toCommonJS(patronDizipal_exports);
 // src/patronDizipal/http.js
 var PROVIDER_NAME = "patronDizipal";
 var USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-var MOBILE_USER_AGENT = "okhttp/4.9.2";
+var MOBILE_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 var GITHUB_URL = "https://raw.githubusercontent.com/patr0nq/veriler/refs/heads/main/siteurl.txt";
 var FALLBACK_DOMAINS = [
   "https://dizipal2138.com"
@@ -1082,6 +1082,90 @@ function $e(streamData) {
   }
   return result;
 }
+// --- DiziPAL erisim dogrulama (interstitial) asimi ---
+function dpIsInterstitial(html) {
+  return typeof html === "string" && (/<meta name="_bn" content=/.test(html) || html.indexOf("Eri\u015Fim do\u011Frulan\u0131yor") !== -1);
+}
+function dpMeta(html, name) {
+  var m = html.match(new RegExp('<meta name="_' + name + '" content="([^"]*)"'));
+  return m ? m[1] : "";
+}
+// PoW: sha256 hex(nonce:guess) on eki zeros adet '0' (crypto-js)
+function dpSolvePow(nonce, zeros, budgetMs) {
+  var CryptoJS = require("crypto-js");
+  var pre = "";
+  for (var z = 0; z < zeros; z++) pre += "0";
+  var start = Date.now();
+  for (var i = 0; i < 8000000; i++) {
+    if (CryptoJS.SHA256(nonce + ":" + i).toString(CryptoJS.enc.Hex).indexOf(pre) === 0) return String(i);
+    if (i % 512 === 0 && Date.now() - start > budgetMs) return null;
+  }
+  return null;
+}
+function dpVerifyChallenge(html, base, referer, jar) {
+  return __async(this, null, function* () {
+    var B = dpMeta(html, "bc"), N = dpMeta(html, "bn"), Z = parseInt(dpMeta(html, "bk") || "3", 10), R = dpMeta(html, "br") || "/";
+    if (!B || !N) return false;
+    W(PROVIDER_NAME, "[Do\u011Frulama] Eri\u015Fim do\u011Frulan\u0131yor (PoW, zorluk " + Z + ")...");
+    var t0 = Date.now();
+    var ans = dpSolvePow(N, Z, 20000);
+    if (ans === null) { W(PROVIDER_NAME, "[Do\u011Frulama] PoW cozulemedi.", "warn"); return false; }
+    var payload = {
+      b: B, a: ans, t: Math.max(Date.now() - t0, 700),
+      m: 3, tc: 0, sc: 1,
+      c: "1f3ab7c2000000000000".slice(0, 16),
+      w: "Google Inc. (Intel)|ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0, D3D11)|WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      au: "0.01234",
+      pl: 3, hw: 8, dp: 1, sw: "1920x1080",
+      tz: -180, tn: "Europe/Istanbul", lg: "tr-TR",
+      wd: 0, ck: 1, pm: "prompt", vs: "visible",
+      r: R
+    };
+    try {
+      var res = yield fetchWithTimeout(base + "/_bc_verify", {
+        method: "POST",
+        headers: {
+          "User-Agent": MOBILE_USER_AGENT,
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          "Accept": "*/*",
+          "Origin": base,
+          "Referer": referer,
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-origin",
+          Cookie: jar.toHeader()
+        },
+        body: JSON.stringify(payload)
+      }, 8e3);
+      jar.update(res);
+      var j = yield res.json();
+      return !!(j && j.ok);
+    } catch (e) {
+      W(PROVIDER_NAME, "[Do\u011Frulama] verify hatas\u0131: " + (e && e.message), "warn");
+      return false;
+    }
+  });
+}
+// HTML getir; interstitial gelirse cozup tekrar dene
+function dpGetHtml(url, headers, jar, referer, base) {
+  return __async(this, null, function* () {
+    var res = yield fetchWithTimeout(url, { headers: Object.assign({}, headers, { Cookie: jar.toHeader() }) }, 8e3);
+    jar.update(res);
+    if (!res.ok) return { ok: false, status: res.status, html: "" };
+    var html = yield res.text();
+    if (dpIsInterstitial(html)) {
+      var origin = url.indexOf("//") !== -1 ? url.split("/").slice(0, 3).join("/") : base;
+      var solved = yield dpVerifyChallenge(html, origin, referer || url, jar);
+      if (solved) {
+        res = yield fetchWithTimeout(url, { headers: Object.assign({}, headers, { Cookie: jar.toHeader() }) }, 8e3);
+        jar.update(res);
+        html = res.ok ? yield res.text() : "";
+      }
+    }
+    return { ok: res.ok, status: res.status, html: html, interstitial: dpIsInterstitial(html) };
+  });
+}
 function resolveDizipalPlayer(contentLink, baseUrl, jar) {
   return __async(this, null, function* () {
     var _a, _b;
@@ -1101,6 +1185,15 @@ function resolveDizipalPlayer(contentLink, baseUrl, jar) {
         return [];
       }
       let pageHtml = yield pageRes.text();
+      if (dpIsInterstitial(pageHtml)) {
+        let pageGet = yield dpGetHtml(contentLink, {
+          "User-Agent": MOBILE_USER_AGENT,
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "tr-TR,tr;q=0.9",
+          Referer: baseUrl + "/"
+        }, cookieJar, contentLink, baseUrl);
+        pageHtml = pageGet.html;
+      }
       let cfgMatch = pageHtml.match(/data-cfg="([^"]+)"/);
       let embedUrl = null;
       if (cfgMatch) {
@@ -1124,7 +1217,8 @@ function resolveDizipalPlayer(contentLink, baseUrl, jar) {
           } catch (_) {
           }
         }
-        let ajaxEndpoints = [baseUrl + "/ajax", baseUrl + "/ajax-player-config"];
+        let ajaxOrigin = contentLink.split("/").slice(0, 3).join("/");
+        let ajaxEndpoints = [ajaxOrigin + "/ajax", ajaxOrigin + "/ajax-player-config"];
         for (let ep of ajaxEndpoints) {
           try {
             let ajaxRes = yield fetchWithTimeout(ep, {
@@ -1134,7 +1228,7 @@ function resolveDizipalPlayer(contentLink, baseUrl, jar) {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                 "X-Requested-With": "XMLHttpRequest",
                 Referer: contentLink,
-                Origin: baseUrl,
+                Origin: ajaxOrigin,
                 Cookie: cookieJar.toHeader()
               },
               body: "cfg=" + encodeURIComponent(unescapedCfg)
