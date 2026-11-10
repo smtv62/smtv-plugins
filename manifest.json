@@ -22,22 +22,6 @@
       "catalogs": []
     },
     {
-      "id": "patron-multi",
-      "name": "PatronMulti",
-      "description": "Birden fazla ekstraktor uzerunden film ve dizi stream linkleri. @patr0n tarafindan gelistirildi (patr0nq/nuvioaddons).",
-      "version": "1.0.1",
-      "filename": "providers/patronMulti.js",
-      "supportedTypes": ["movie", "tv"],
-      "enabled": true,
-      "logo": "https://www.google.com/s2/favicons?domain=vidmody.com&sz=%size%",
-      "supportsStreams": true,
-      "supportsSearch": false,
-      "supportsComments": false,
-      "contentLanguage": ["en", "tr"],
-      "formats": ["m3u8"],
-      "catalogs": []
-    },
-    {
       "id": "patron-dort-khd",
       "name": "Patron4KHDHub",
       "description": "4KHDHub tabanli film ve dizi stream linkleri. @patr0n tarafindan gelistirildi (patr0nq/nuvioaddons).",
@@ -83,22 +67,6 @@
       "supportsComments": false,
       "contentLanguage": ["tr"],
       "formats": ["m3u8", "mp4", "mkv", "hls"],
-      "catalogs": []
-    },
-    {
-      "id": "patron-sinewix",
-      "name": "patronSineWix",
-      "description": "SineWix tabanli film ve dizi saglayicisi. @patr0n tarafindan gelistirildi (patr0nq/nuvioaddons).",
-      "version": "1.1.0",
-      "filename": "providers/patronSinewix.js",
-      "supportedTypes": ["movie", "tv"],
-      "enabled": true,
-      "logo": "https://ydfvfdizipanel.ru/favicon.ico",
-      "supportsStreams": true,
-      "supportsSearch": true,
-      "supportsComments": false,
-      "contentLanguage": ["tr"],
-      "formats": ["m3u8", "mp4", "mkv"],
       "catalogs": []
     },
     {
@@ -292,22 +260,6 @@
       "catalogs": []
     },
     {
-      "id": "moon-rectv",
-      "name": "RecTV",
-      "description": "prectv70 uzerinden film ve dizi saglayicisi. mooncrown04/nuviotr.",
-      "version": "1.0.0",
-      "filename": "providers/rectv.js",
-      "supportedTypes": ["movie", "tv"],
-      "enabled": true,
-      "logo": "https://www.google.com/s2/favicons?domain=prectv70.lol&sz=%size%",
-      "supportsStreams": true,
-      "supportsSearch": false,
-      "supportsComments": false,
-      "contentLanguage": ["tr"],
-      "formats": ["m3u8"],
-      "catalogs": []
-    },
-    {
       "id": "moon-sezonlukdizi",
       "name": "SezonlukDizi",
       "description": "sezonlukdizi8.com uzerinden dizi saglayicisi. mooncrown04/nuviotr.",
@@ -353,22 +305,6 @@
       "supportsComments": false,
       "contentLanguage": ["tr"],
       "formats": ["m3u8", "hls"],
-      "catalogs": []
-    },
-    {
-      "id": "moon-666filmizle",
-      "name": "666Filmizle",
-      "description": "666filmizle.site uzerinden film saglayicisi. mooncrown04/nuviotr.",
-      "version": "1.0.0",
-      "filename": "providers/altiyuzaltmisaltifilm.js",
-      "supportedTypes": ["movie"],
-      "enabled": true,
-      "logo": "https://www.google.com/s2/favicons?domain=666filmizle.site&sz=%size%",
-      "supportsStreams": true,
-      "supportsSearch": false,
-      "supportsComments": false,
-      "contentLanguage": ["tr"],
-      "formats": ["m3u8", "mp4"],
       "catalogs": []
     },
     {
