@@ -77,6 +77,27 @@ var import_cheerio_without_node_native2 = __toESM(require("cheerio-without-node-
 
 // src/patronJetFilmizle/http.js
 var MAIN_URL = "https://jetfilmizle.app";
+/* ---------- domain cozumleme (bot bakimli domains.json) ---------- */
+var DOMAIN_KEY = "patron-jet-filmizle";
+var DEFAULT_MAIN = "https://jetfilmizle.app";
+var DOMAINS_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
+var _mainCache = null;
+async function resolveMain() {
+  if (_mainCache) return _mainCache;
+  try {
+    var r = await fetch(DOMAINS_URL, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
+    if (r.ok) {
+      var j = JSON.parse(await r.text());
+      var v = j && j[DOMAIN_KEY];
+      if (typeof v === "string" && /^https:\/\//.test(v)) {
+        _mainCache = v.replace(/\/+$/, "");
+        return _mainCache;
+      }
+    }
+  } catch (e) {}
+  _mainCache = DEFAULT_MAIN;
+  return _mainCache;
+}
 var HEADERS = {
   "Referer": `${MAIN_URL}/`,
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -312,6 +333,8 @@ var PROVIDER_TAG3 = "[PatronJetFilmizle]";
 function getStreams(tmdbId, type, season, episode) {
   return __async(this, null, function* () {
     try {
+      MAIN_URL = yield resolveMain();
+      HEADERS.Referer = `${MAIN_URL}/`;
       console.log(`${PROVIDER_TAG3} \u0130stek: ${type} | TMDB: ${tmdbId}`);
       const { trTitle, origTitle } = yield getTmdbTitle(tmdbId, type);
       console.log(`${PROVIDER_TAG3} TMDB: ${tmdbId} | Baslik: ${trTitle}`);

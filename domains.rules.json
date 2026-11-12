@@ -1,0 +1,19 @@
+{
+  "_comment": "domain-monitor bot kurallari (providers bunu okumaz; sadece scripts/domain_monitor.py). Semantik: alive = kabul edilen status kodlari (default [200]); expect sadece 200'de kontrol edilir. ext = olu domainde aday kaynak (patr0nq siteurl.txt key). discover false = desen taramasi yapma.",
+  "hdfilmcehennemi": { "path": "/api/search?q=test", "expect": "\"data\":", "ext": { "patr0nq": "hdfilmcehennemi" } },
+  "patron-dizipal": { "ext": { "patr0nq": "dizipal" } },
+  "patron-diziyou": { "ext": { "patr0nq": "diziyou" } },
+  "patron-jet-filmizle": { "ext": { "patr0nq": "jetfilm" } },
+  "patron-hdfilmdelisi": {},
+  "dizibal": {},
+  "filmekseni": {},
+  "moon-vidmody": { "alive": [200, 400, 401, 403, 404, 500], "expect": "", "discover": false },
+  "moon-cinemacity": { "alive": [200, 403, 503] },
+  "moon-netmirror": {},
+  "moon-filmmodu": { "ext": { "patr0nq": "filmmodu" } },
+  "moon-fullhdfilmizlesene": { "alive": [200, 403, 503], "ext": { "patr0nq": "fullhdfilmizlesene" } },
+  "moon-sezonlukdizi": { "ext": { "patr0nq": "sezonlukdizi" } },
+  "moon-sinemacx": { "ext": { "patr0nq": "sinemacx" } },
+  "moon-webteizle": { "alive": [200, 403, 503] },
+  "moon-jetfilmizlenet": { "ext": { "patr0nq": "jetfilm" } }
+}

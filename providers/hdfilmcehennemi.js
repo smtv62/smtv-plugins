@@ -9,12 +9,12 @@
  *   4) Her kaynak: base64 template -> iframe data-src ( {url}/{slug} placeholder )
  *   5) Player sayfasi -> file: "<m3u8>"
  *
- * Aktif domain sources.json (bot bakimli) icinden okunur; okunamazsa
+ * Aktif domain domains.json (bot bakimli) icinden okunur; okunamazsa
  * DEFAULT_BASE kullanilir.
  */
 
 var DEFAULT_BASE = "https://www.hdfilmcehennemi2.biz";
-var SOURCES_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/sources.json";
+var SOURCES_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
 var PROVIDER = "HDFilmCehennemi";
 var MAX_PLAYERS = 6;
 var UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
@@ -25,7 +25,7 @@ function log() {
   } catch (e) {}
 }
 
-/* ---------- domain cozumleme (bot bakimli sources.json) ---------- */
+/* ---------- domain cozumleme (bot bakimli domains.json) ---------- */
 
 var _baseCache = null;
 
@@ -35,14 +35,14 @@ async function resolveBase() {
     var r = await fetch(SOURCES_URL, { headers: { "User-Agent": UA, "Accept": "application/json" } });
     if (r.ok) {
       var j = JSON.parse(await r.text());
-      if (j && j.hdfilmcehennemi && j.hdfilmcehennemi.base) {
-        _baseCache = String(j.hdfilmcehennemi.base).replace(/\/+$/, "");
-        log("domain sources.json ->", _baseCache);
+      if (j && typeof j.hdfilmcehennemi === "string") {
+        _baseCache = String(j.hdfilmcehennemi).replace(/\/+$/, "");
+        log("domain domains.json ->", _baseCache);
         return _baseCache;
       }
     }
   } catch (e) {
-    log("sources.json okunamadi:", e.message || e);
+    log("domains.json okunamadi:", e.message || e);
   }
   _baseCache = DEFAULT_BASE;
   return _baseCache;

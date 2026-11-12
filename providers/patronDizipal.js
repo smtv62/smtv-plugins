@@ -81,9 +81,9 @@ module.exports = __toCommonJS(patronDizipal_exports);
 var PROVIDER_NAME = "patronDizipal";
 var USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 var MOBILE_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-var GITHUB_URL = "https://raw.githubusercontent.com/patr0nq/veriler/refs/heads/main/siteurl.txt";
+var GITHUB_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
 var FALLBACK_DOMAINS = [
-  "https://dizipal2138.com"
+  "https://dizipal2148.com"
 ];
 var CACHE_TTL = 3e5;
 var ROOT = typeof globalThis !== "undefined" ? globalThis : typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : {};
@@ -225,27 +225,14 @@ function fetchBaseUrl() {
         headers: { "User-Agent": USER_AGENT }
       }, 5e3);
       if (res.ok) {
-        const text = yield res.text();
-        const found = {};
-        for (const line of text.split(/\r?\n/)) {
-          const trimmed = line.trim();
-          const colonIdx = trimmed.indexOf(":");
-          if (colonIdx <= 0)
-            continue;
-          const key = trimmed.substring(0, colonIdx).trim();
-          if (key !== "dizipalDiger" && key !== "dizipal")
-            continue;
-          let url2 = trimmed.substring(colonIdx + 1).trim();
+        const data = yield res.json();
+        let url2 = data && data["patron-dizipal"];
+        if (typeof url2 === "string" && url2.startsWith("http")) {
           if (url2.endsWith("/"))
             url2 = url2.slice(0, -1);
-          if (url2.startsWith("http"))
-            found[key] = url2;
-        }
-        const url = found.dizipalDiger || found.dizipal;
-        if (url) {
-          _cachedDomain = url;
+          _cachedDomain = url2;
           _lastFetchTime = now;
-          W(PROVIDER_NAME, "Aktif domain (GitHub): " + _cachedDomain, "info");
+          W(PROVIDER_NAME, "Aktif domain (domains.json): " + _cachedDomain, "info");
           return _cachedDomain;
         }
       }

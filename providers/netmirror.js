@@ -10,6 +10,27 @@ console.log("[NetMirror] Initializing NetMirror provider (embed)");
 // Donen MP4'lerin hepsi belli Referer/UA kombinasyonu istiyor (asagida).
 // ---------------------------------------------------------------------------
 const NETMIRROR_BASES = ["https://net79.cc", "https://net27.cc"];
+/* ---------- domain cozumleme (bot bakimli domains.json) ---------- */
+var DOMAIN_KEY = "moon-netmirror";
+var DEFAULT_BASE = "https://net79.cc";
+var DOMAINS_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
+var _baseCache = null;
+async function resolveBase() {
+  if (_baseCache) return _baseCache;
+  try {
+    var r = await fetch(DOMAINS_URL, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
+    if (r.ok) {
+      var j = JSON.parse(await r.text());
+      var v = j && j[DOMAIN_KEY];
+      if (typeof v === "string" && /^https:\/\//.test(v)) {
+        _baseCache = v.replace(/\/+$/, "");
+        return _baseCache;
+      }
+    }
+  } catch (e) {}
+  _baseCache = DEFAULT_BASE;
+  return _baseCache;
+}
 
 // hakunaymatata MP4 CDN'i bu Referer olmadan HTTP 429 dondurur.
 const STREAM_REFERER = "https://videodownloader.site/";
@@ -143,8 +164,10 @@ async function getStreams(tmdbId, mediaType, season, episode) {
     }
     const path = buildEmbedPath(tmdbId, mediaType, season, episode);
 
-    for (let i = 0; i < NETMIRROR_BASES.length; i++) {
-      const base = NETMIRROR_BASES[i];
+    const primary = await resolveBase();
+    const bases = [primary].concat(NETMIRROR_BASES.filter(function (b) { return b !== primary; }));
+    for (let i = 0; i < bases.length; i++) {
+      const base = bases[i];
       let data = null;
       try {
         data = await fetchEmbed(base, path);

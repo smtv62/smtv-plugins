@@ -14,7 +14,28 @@
  */
 
 var TMDB_API_KEY = "500330721680edb6d5f7f12ba7cd9023";
-var MAIN_URL = "https://hdfilmdelisi.one";
+/* ---------- domain cozumleme (bot bakimli domains.json) ---------- */
+var DOMAIN_KEY = "patron-hdfilmdelisi";
+var DEFAULT_BASE = "https://hdfilmdelisi1.com";
+var DOMAINS_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
+var _baseCache = null;
+async function resolveBase() {
+  if (_baseCache) return _baseCache;
+  try {
+    var r = await fetch(DOMAINS_URL, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
+    if (r.ok) {
+      var j = JSON.parse(await r.text());
+      var v = j && j[DOMAIN_KEY];
+      if (typeof v === "string" && /^https:\/\//.test(v)) {
+        _baseCache = v.replace(/\/+$/, "");
+        return _baseCache;
+      }
+    }
+  } catch (e) {}
+  _baseCache = DEFAULT_BASE;
+  return _baseCache;
+}
+var MAIN_URL = DEFAULT_BASE;
 var VIX_REFERER = "https://pl.vixolity.com/";
 var TAG = "[PatronHDFilmDelisi]";
 
@@ -258,6 +279,7 @@ async function extractStreams(tmdbId, mediaType) {
 }
 
 async function getStreams(tmdbId, mediaType, season, episode) {
+  MAIN_URL = await resolveBase();
   try {
     console.log(TAG + " Istek: " + mediaType + " | TMDB: " + tmdbId + " | S:" + season + " E:" + episode);
     if (mediaType !== "movie") return [];

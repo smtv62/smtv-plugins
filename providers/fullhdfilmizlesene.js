@@ -5,8 +5,29 @@
 
 var cheerio = require("cheerio-without-node-native");
 
-const BASE_URL = "https://www.fullhdfilmizlesene.now";
-const API_BASE = "https://www.fullhdfilmizlesene.now/player/api.php";
+/* ---------- domain cozumleme (bot bakimli domains.json) ---------- */
+var DOMAIN_KEY = "moon-fullhdfilmizlesene";
+var DEFAULT_BASE = "https://www.fullhdfilmizlesene.now";
+var DOMAINS_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
+var _baseCache = null;
+async function resolveBase() {
+  if (_baseCache) return _baseCache;
+  try {
+    var r = await fetch(DOMAINS_URL, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
+    if (r.ok) {
+      var j = JSON.parse(await r.text());
+      var v = j && j[DOMAIN_KEY];
+      if (typeof v === "string" && /^https:\/\//.test(v)) {
+        _baseCache = v.replace(/\/+$/, "");
+        return _baseCache;
+      }
+    }
+  } catch (e) {}
+  _baseCache = DEFAULT_BASE;
+  return _baseCache;
+}
+var BASE_URL = DEFAULT_BASE;
+var API_BASE = BASE_URL + "/player/api.php";
 
 const WORKING_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -92,7 +113,11 @@ async function getStreamsFromAPI(vidid, movieTitle) {
     return results.filter(r => r !== null);
 }
 
-function getStreams(tmdbId, mediaType, seasonNum, episodeNum) {
+async function getStreams(tmdbId, mediaType, seasonNum, episodeNum) {
+    BASE_URL = await resolveBase();
+    API_BASE = BASE_URL + "/player/api.php";
+    WORKING_HEADERS.Referer = BASE_URL + '/';
+    WORKING_HEADERS.Origin = BASE_URL;
     return new Promise(function(resolve) {
         if (mediaType !== 'movie') return resolve([]);
 

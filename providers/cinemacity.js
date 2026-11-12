@@ -31,7 +31,28 @@ var __async = (__this, __arguments, generator) => {
   });
 };
 
-const MAIN_URL = "https://cinemacity.cc";
+/* ---------- domain cozumleme (bot bakimli domains.json) ---------- */
+var DOMAIN_KEY = "moon-cinemacity";
+var DEFAULT_BASE = "https://cinemacity.cc";
+var DOMAINS_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
+var _baseCache = null;
+async function resolveBase() {
+  if (_baseCache) return _baseCache;
+  try {
+    var r = await fetch(DOMAINS_URL, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
+    if (r.ok) {
+      var j = JSON.parse(await r.text());
+      var v = j && j[DOMAIN_KEY];
+      if (typeof v === "string" && /^https:\/\//.test(v)) {
+        _baseCache = v.replace(/\/+$/, "");
+        return _baseCache;
+      }
+    }
+  } catch (e) {}
+  _baseCache = DEFAULT_BASE;
+  return _baseCache;
+}
+var MAIN_URL = DEFAULT_BASE;
 const HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36",
   "Cookie": "dle_user_id=32729; dle_password=894171c6a8dab18ee594d5c652009a35;",
@@ -62,6 +83,8 @@ function extractQuality(url) {
 }
 
 async function getStreams(tmdbId, mediaType, season, episode) {
+  MAIN_URL = await resolveBase();
+  HEADERS.Referer = MAIN_URL + "/";
   try {
     const tmdbRes = await fetch(`https://api.themoviedb.org/3/${mediaType === "tv" ? "tv" : "movie"}/${tmdbId}?api_key=${TMDB_API_KEY}`);
     const mediaInfo = await tmdbRes.json();

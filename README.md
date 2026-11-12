@@ -46,11 +46,16 @@ Smoke testte elenen upstream kaynaklari (bu depoya ALINMADI):
 
 ## Kaynaklar (bot bakimli)
 
-Aktif domainler `sources.json` icinde tutulur (HDFilmCehennemi icin domain
-rotasyonu). GitHub Actions botu (`.github/workflows/update-sources.yml`)
-6 saatte bir tum adaylari yoklar; olu aday varsa `base` guncellenir ve commit
-atilir. Eklenti her calismada `sources.json` okur, okunamazsa gobukteki
-varsayilana duser. Diger provider'lar kendi domain listelerini kullanir.
+Aktif domainler `domains.json` icinde tutulur (duz `{ "anahtar": "https://alanadi" }`
+listesi;16 kaynak). GitHub Actions botu (`.github/workflows/domain-monitor.yml`)
+6 saatte bir tum listeyi healthcheck ile tarar; olum varsa once redirect zincirini
+izler, sonra kesif (www / numarali desen / TLD) ve dis liste (patr0nq siteurl.txt)
+ile yeni adayi ayni kuralla dogrular, bulursa `domains.json`'i guncelleyip
+commit'ler. Eklenti her calismada kendi anahtariyla listeyi okur, okunamazsa
+gobukteki varsayilana duser.
+
+Kurallar (healthcheck path/expect, durum kodlari, dis liste eslesmeleri)
+`domains.rules.json` dosyasindadir — bot haricinde kimse okumaz.
 
 Yeni kaynak ekleme:
 1. `providers/<dosya>.js` ekle (PluginRuntime API: fetch + cheerio/crypto-js require).
@@ -62,7 +67,8 @@ Yeni kaynak ekleme:
 ```
 npm i                                 # test bagimliliklari (cheerio, crypto-js)
 node test/run-tests.mjs               # yerel test (Node 18+; film+dizi+arama + tum provider smoke)
-node scripts/check-sources.mjs        # domain saglik kontrolu
+node test/check-all.mjs               # kapsamli provider saglik testi (TMDB anahtari gerekir)
+python scripts/domain_monitor.py      # domain saglik kontrolu + guncelleme (curl_cffi)
 ```
 
 Test, eklenti ortamini PluginRuntime.kt'ye sadik taklit eder: `require`

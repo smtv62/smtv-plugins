@@ -5,7 +5,28 @@
 //  - Kalite bilgisi sadece veride varsa görünür
 // ============================================================
 
-var BASE_URL     = 'https://webteizle.info';
+/* ---------- domain cozumleme (bot bakimli domains.json) ---------- */
+var DOMAIN_KEY = "moon-webteizle";
+var DEFAULT_BASE = "https://webteizle.info";
+var DOMAINS_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
+var _baseCache = null;
+async function resolveBase() {
+  if (_baseCache) return _baseCache;
+  try {
+    var r = await fetch(DOMAINS_URL, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
+    if (r.ok) {
+      var j = JSON.parse(await r.text());
+      var v = j && j[DOMAIN_KEY];
+      if (typeof v === "string" && /^https:\/\//.test(v)) {
+        _baseCache = v.replace(/\/+$/, "");
+        return _baseCache;
+      }
+    }
+  } catch (e) {}
+  _baseCache = DEFAULT_BASE;
+  return _baseCache;
+}
+var BASE_URL     = DEFAULT_BASE;
 var TMDB_API_KEY = '500330721680edb6d5f7f12ba7cd9023';
 
 var HEADERS = {
@@ -215,7 +236,9 @@ function processEmbed(embedData, dilAd, movieTitle) {
 }
 
 // ── Ana Fonksiyon ─────────────────────────────────────────────
-function getStreams(tmdbId, mediaType, season, episode) {
+async function getStreams(tmdbId, mediaType, season, episode) {
+  BASE_URL = await resolveBase();
+  HEADERS.Referer = BASE_URL + '/';
   return fetchTmdbInfo(tmdbId, mediaType)
     .then(function(info) {
       var movieName = info.titleTr || info.titleEn;

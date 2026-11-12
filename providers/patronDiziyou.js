@@ -67,6 +67,7 @@ module.exports = __toCommonJS(patronDiziyou_exports);
 // src/patronDiziyou/http.js
 var PROVIDER_TAG = "[Diziyou]";
 var FALLBACK_URL = "https://www.diziyou.one";
+var DOMAINS_LIST_URL = "https://raw.githubusercontent.com/smtv62/smtv-plugins/main/domains.json";
 var HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -75,25 +76,20 @@ var HEADERS = {
 function getDiziyouBaseUrl() {
   return __async(this, null, function* () {
     try {
-      const githubUrl = "https://raw.githubusercontent.com/patr0nq/veriler/refs/heads/main/siteurl.txt";
-      const res = yield fetch(githubUrl);
+      const res = yield fetch(DOMAINS_LIST_URL);
       if (!res.ok)
         throw new Error(`HTTP ${res.status}`);
-      const text = yield res.text();
-      const lines = text.split("\n");
-      for (let line of lines) {
-        line = line.trim();
-        if (line.startsWith("diziyou:")) {
-          let url = line.substring("diziyou:".length).trim();
-          if (url.endsWith("/")) {
-            url = url.slice(0, -1);
-          }
-          console.log(`${PROVIDER_TAG} Aktif domain (Github): ${url}`);
-          return url;
+      const data = yield res.json();
+      let url = data && data["patron-diziyou"];
+      if (typeof url === "string" && url.startsWith("http")) {
+        if (url.endsWith("/")) {
+          url = url.slice(0, -1);
         }
+        console.log(`${PROVIDER_TAG} Aktif domain (domains.json): ${url}`);
+        return url;
       }
     } catch (e) {
-      console.error(`${PROVIDER_TAG} Github'dan domain \xE7ekilemedi: ${e.message}`);
+      console.error(`${PROVIDER_TAG} domains.json okunamadi: ${e.message}`);
     }
     console.log(`${PROVIDER_TAG} Aktif domain (Fallback): ${FALLBACK_URL}`);
     return FALLBACK_URL;
