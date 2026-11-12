@@ -7,11 +7,8 @@ smTV One icin ozel Nuvio JS eklentileri — tek depoda birden fazla kaynak.
 | Eklenti | ID | Icerik | Arama | Durum | Kaynak |
 |---|---|---|---|---|---|
 | HDFilmCehennemi | hdfilmcehennemi | film + dizi | evet | aktif | smTV (ozel yazim) |
-| PatronMulti | patron-multi | film + dizi (coklu ekstraktor) | hayir | aktif | @patr0n |
-| Patron4KHDHub | patron-dort-khd | film + dizi | hayir | aktif | @patr0n |
 | patronDizipal | patron-dizipal | film + dizi | hayir | aktif | @patr0n |
 | patronDiziyou | patron-diziyou | dizi | hayir | aktif | @patr0n |
-| patronSineWix | patron-sinewix | film + dizi | evet | aktif | @patr0n |
 | patronJetFilmizle | patron-jet-filmizle | film | hayir | aktif | @patr0n |
 | PatronHDFilmDelisi | patron-hdfilmdelisi | film + dizi | hayir | aktif | @patr0n |
 | FilmEkseni | manitux-filmekseni | film + dizi | evet | aktif | manitux |

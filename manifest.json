@@ -22,22 +22,6 @@
       "catalogs": []
     },
     {
-      "id": "patron-dort-khd",
-      "name": "Patron4KHDHub",
-      "description": "4KHDHub tabanli film ve dizi stream linkleri. @patr0n tarafindan gelistirildi (patr0nq/nuvioaddons).",
-      "version": "2.0.0",
-      "filename": "providers/patrondortkhd.js",
-      "supportedTypes": ["movie", "tv"],
-      "enabled": true,
-      "logo": "https://www.google.com/s2/favicons?domain=4khdhub.one&sz=%size%",
-      "supportsStreams": true,
-      "supportsSearch": false,
-      "supportsComments": false,
-      "contentLanguage": ["en", "hi"],
-      "formats": ["mp4", "m3u8", "mkv"],
-      "catalogs": []
-    },
-    {
       "id": "patron-dizipal",
       "name": "patronDizipal",
       "description": "Dizipal tabanli film ve dizi saglayicisi. @patr0n tarafindan gelistirildi (patr0nq/nuvioaddons).",
